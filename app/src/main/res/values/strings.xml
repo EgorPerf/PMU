@@ -1,3 +1,40 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">PMU</string>
+    <string name="registration_title">Регистрация игрока</string>
+    <string name="full_name">ФИО</string>
+    <string name="name_hint">Иванов Иван Иванович</string>
+    <string name="name_required">Введите ФИО</string>
+    <string name="gender">Пол</string>
+    <string name="male">Мужской</string>
+    <string name="female">Женский</string>
+    <string name="gender_required">Выберите пол</string>
+    <string name="course">Курс</string>
+    <string-array name="courses">
+        <item>1 курс</item>
+        <item>2 курс</item>
+        <item>3 курс</item>
+        <item>4 курс</item>
+        <item>5 курс</item>
+        <item>6 курс</item>
+    </string-array>
+    <string name="difficulty">Уровень сложности игры</string>
+    <string name="difficulty_value">Сложность игры: %1$d из 10</string>
+    <string name="birth_date">Дата рождения</string>
+    <string name="birth_date_value">%1$s · изменить дату</string>
+    <string name="register">Зарегистрировать</string>
+    <string name="player_title">Анкета игрока</string>
+    <string name="zodiac">Знак зодиака</string>
+    <string name="player_summary">ФИО: %1$s\nПол: %2$s\nКурс: %3$d\nСложность: %4$d из 10\nДата рождения: %5$s\nЗнак зодиака: %6$s</string>
+    <string name="aries">Овен</string>
+    <string name="taurus">Телец</string>
+    <string name="gemini">Близнецы</string>
+    <string name="cancer">Рак</string>
+    <string name="leo">Лев</string>
+    <string name="virgo">Дева</string>
+    <string name="libra">Весы</string>
+    <string name="scorpio">Скорпион</string>
+    <string name="sagittarius">Стрелец</string>
+    <string name="capricorn">Козерог</string>
+    <string name="aquarius">Водолей</string>
+    <string name="pisces">Рыбы</string>
 </resources>
