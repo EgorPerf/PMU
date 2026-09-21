@@ -3,6 +3,7 @@ package com.example.myapplication
 import android.app.DatePickerDialog
 import android.graphics.Color
 import android.os.Bundle
+import android.text.InputFilter
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
@@ -49,6 +50,15 @@ class MainActivity : ComponentActivity() {
             insets
         }
         fullName = findViewById(R.id.full_name)
+        val nameFilter = InputFilter { source, start, end, _, _, _ ->
+            val input = source.subSequence(start, end)
+            if (input.all { it.isLetter() || it == ' ' }) {
+                null
+            } else {
+                input.filter { it.isLetter() || it == ' ' }
+            }
+        }
+        fullName.filters = arrayOf(nameFilter, *fullName.filters)
         gender = findViewById(R.id.gender)
         course = findViewById(R.id.course)
         difficulty = findViewById(R.id.difficulty)
