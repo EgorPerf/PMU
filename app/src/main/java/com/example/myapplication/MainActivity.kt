@@ -4,6 +4,11 @@ import android.app.DatePickerDialog
 import android.graphics.Color
 import android.os.Bundle
 import android.text.InputFilter
+import android.text.Html
+import android.widget.TabHost
+import android.widget.ListView
+import android.widget.BaseAdapter
+import android.view.ViewGroup
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
@@ -41,8 +46,17 @@ class MainActivity : ComponentActivity() {
         )
         setContentView(R.layout.activity_main)
 
-        val scroll = findViewById<ScrollView>(R.id.form_scroll)
-        ViewCompat.setOnApplyWindowInsetsListener(scroll) { view, insets ->
+        val tabs = findViewById<TabHost>(android.R.id.tabhost)
+        tabs.setup()
+        tabs.addTab(tabs.newTabSpec("registration").setIndicator(getString(R.string.tab_registration)).setContent(R.id.form_scroll))
+        tabs.addTab(tabs.newTabSpec("rules").setIndicator(getString(R.string.tab_rules)).setContent(R.id.rules_tab))
+        tabs.addTab(tabs.newTabSpec("authors").setIndicator(getString(R.string.tab_authors)).setContent(R.id.authors_list))
+        tabs.addTab(tabs.newTabSpec("settings").setIndicator(getString(R.string.tab_settings)).setContent(R.id.settings_tab))
+        tabs.currentTab = savedInstanceState?.getInt("selectedTab") ?: 0
+        setupRules()
+        setupAuthors()
+        setupSettings()
+        ViewCompat.setOnApplyWindowInsetsListener(tabs) { view, insets ->
             val padding = insets.getInsets(
                 WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime()
             )
@@ -116,6 +130,52 @@ class MainActivity : ComponentActivity() {
         findViewById<Button>(R.id.register).setOnClickListener { registerPlayer() }
     }
 
+    private fun setupRules() {
+        val html = resources.openRawResource(R.raw.rules).bufferedReader().use { it.readText() }
+        findViewById<TextView>(R.id.rules_text).text = Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY)
+    }
+
+    private fun setupAuthors() {
+        val authors = listOf(getString(R.string.author_name))
+        findViewById<ListView>(R.id.authors_list).adapter = object : BaseAdapter() {
+            override fun getCount() = authors.size
+            override fun getItem(position: Int) = authors[position]
+            override fun getItemId(position: Int) = position.toLong()
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val row = convertView ?: layoutInflater.inflate(R.layout.author_item, parent, false)
+                row.findViewById<TextView>(R.id.author_name).text = authors[position]
+                row.findViewById<ImageView>(R.id.author_photo).apply {
+                    setImageResource(android.R.drawable.ic_menu_myplaces)
+                    contentDescription = authors[position]
+                }
+                return row
+            }
+        }
+    }
+
+    private fun setupSettings() {
+        val preferences = getSharedPreferences("game_settings", MODE_PRIVATE)
+        fun bind(id: Int, label: Int, format: Int, key: String, initial: Int, step: Int = 1) {
+            val bar = findViewById<SeekBar>(id)
+            val text = findViewById<TextView>(label)
+            bar.progress = preferences.getInt(key, initial) / step - 1
+            fun update() { text.text = getString(format, (bar.progress + 1) * step) }
+            update()
+            bar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                    update()
+                    preferences.edit().putInt(key, (progress + 1) * step).apply()
+                }
+                override fun onStartTrackingTouch(seekBar: SeekBar?) = Unit
+                override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
+            })
+        }
+        bind(R.id.game_speed, R.id.game_speed_label, R.string.game_speed_value, "speed", 5)
+        bind(R.id.max_cockroaches, R.id.max_cockroaches_label, R.string.max_cockroaches_value, "cockroaches", 10)
+        bind(R.id.bonus_interval, R.id.bonus_interval_label, R.string.bonus_interval_value, "bonusInterval", 10)
+        bind(R.id.round_duration, R.id.round_duration_label, R.string.round_duration_value, "roundDuration", 60, 10)
+    }
+
     private fun selectedDate() = BirthDate(
         birthDate.get(Calendar.YEAR), birthDate.get(Calendar.MONTH) + 1,
         birthDate.get(Calendar.DAY_OF_MONTH)
@@ -182,6 +242,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
+        outState.putInt("selectedTab", findViewById<TabHost>(android.R.id.tabhost).currentTab)
         outState.putLong("birthDate", birthDate.timeInMillis)
         player?.let {
             outState.putBundle("player", Bundle().apply {

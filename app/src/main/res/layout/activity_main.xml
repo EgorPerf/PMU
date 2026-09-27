@@ -1,140 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/form_scroll"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true">
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp"
-        android:focusableInTouchMode="true">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/registration_title"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:textColor="#174D3E" />
-
-        <TextView style="@style/FormLabel" android:text="@string/full_name" />
-        <EditText
-            android:id="@+id/full_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:inputType="textPersonName|textCapWords"
-            android:autofillHints="name"
-            android:maxLength="150"
-            android:hint="@string/name_hint" />
-
-        <TextView style="@style/FormLabel" android:text="@string/gender" />
-        <RadioGroup
-            android:id="@+id/gender"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:focusable="true">
-            <RadioButton
-                android:id="@+id/gender_male"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minHeight="48dp"
-                android:text="@string/male" />
-            <RadioButton
-                android:id="@+id/gender_female"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:minHeight="48dp"
-                android:text="@string/female" />
-        </RadioGroup>
-        <TextView
-            android:id="@+id/gender_error"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/gender_required"
-            android:textColor="#B3261E"
-            android:accessibilityLiveRegion="polite"
-            android:visibility="gone" />
-
-        <TextView style="@style/FormLabel" android:text="@string/course" android:labelFor="@id/course" />
-        <Spinner
-            android:id="@+id/course"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:spinnerMode="dropdown" />
-
-        <TextView android:id="@+id/difficulty_label" style="@style/FormLabel"
-            android:text="@string/difficulty" android:labelFor="@id/difficulty" />
-        <SeekBar
-            android:id="@+id/difficulty"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:max="9"
-            android:progress="4"
-            android:contentDescription="@string/difficulty" />
-
-        <TextView style="@style/FormLabel" android:text="@string/birth_date" android:labelFor="@id/birth_calendar" />
-        <Button
-            android:id="@+id/birth_date_button"
-            style="?android:attr/borderlessButtonStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:text="@string/birth_date"
-            android:textAllCaps="false" />
-        <CalendarView
-            android:id="@+id/birth_calendar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:firstDayOfWeek="2"
-            android:minDate="01/01/1900" />
-
-        <Button
-            android:id="@+id/register"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:minHeight="56dp"
-            android:text="@string/register"
-            android:textAllCaps="false"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="#1A6952" />
-
-        <LinearLayout
-            android:id="@+id/result_panel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:padding="16dp"
-            android:orientation="vertical"
-            android:background="#E5F4EF"
-            android:visibility="gone">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/player_title"
-                android:textStyle="bold"
-                android:textSize="22sp" />
-            <ImageView
-                android:id="@+id/zodiac_image"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="16dp"
-                android:contentDescription="@string/zodiac" />
-            <TextView
-                android:id="@+id/result"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:textSize="18sp"
-                android:lineSpacingExtra="6dp"
-                android:textIsSelectable="true"
-                android:accessibilityLiveRegion="polite" />
-        </LinearLayout>
+<TabHost xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/tabhost" android:layout_width="match_parent" android:layout_height="match_parent">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
+        <HorizontalScrollView android:layout_width="match_parent" android:layout_height="wrap_content" android:fillViewport="true">
+            <TabWidget android:id="@android:id/tabs" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        </HorizontalScrollView>
+        <FrameLayout android:id="@android:id/tabcontent" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+            <include layout="@layout/tab_registration" />
+            <ScrollView android:id="@+id/rules_tab" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
+                <TextView android:id="@+id/rules_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="24dp" android:textSize="18sp" />
+            </ScrollView>
+            <ListView android:id="@+id/authors_list" android:layout_width="match_parent" android:layout_height="match_parent" />
+            <include layout="@layout/tab_settings" />
+        </FrameLayout>
     </LinearLayout>
-</ScrollView>
+</TabHost>

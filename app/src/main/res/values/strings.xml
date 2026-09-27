@@ -35,4 +35,17 @@
     <string name="capricorn">Козерог</string>
     <string name="aquarius">Водолей</string>
     <string name="pisces">Рыбы</string>
+    <string name="tab_registration">Регистрация</string>
+    <string name="tab_rules">Правила</string>
+    <string name="tab_authors">Авторы</string>
+    <string name="tab_settings">Настройки</string>
+    <string name="author_name">Перфильев Егор Максимович</string>
+    <string name="game_speed">Скорость игры</string>
+    <string name="max_cockroaches">Максимум тараканов</string>
+    <string name="bonus_interval">Интервал бонусов</string>
+    <string name="round_duration">Длительность раунда</string>
+    <string name="game_speed_value">Скорость игры: %1$d</string>
+    <string name="max_cockroaches_value">Максимум тараканов на экране: %1$d</string>
+    <string name="bonus_interval_value">Интервал появления бонусов: %1$d с</string>
+    <string name="round_duration_value">Длительность раунда: %1$d с</string>
 </resources>
