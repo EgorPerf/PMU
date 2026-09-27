@@ -5,7 +5,11 @@ import android.graphics.Color
 import android.os.Bundle
 import android.text.InputFilter
 import android.text.Html
-import android.widget.TabHost
+import android.os.Parcelable
+import android.util.SparseArray
+import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 import android.widget.ListView
 import android.widget.BaseAdapter
 import android.view.ViewGroup
@@ -29,6 +33,9 @@ import androidx.core.view.WindowInsetsCompat
 import java.util.Calendar
 
 class MainActivity : ComponentActivity() {
+    private lateinit var pages: List<View>
+    private lateinit var pager: ViewPager2
+    private lateinit var tabMediator: TabLayoutMediator
     private lateinit var fullName: EditText
     private lateinit var gender: RadioGroup
     private lateinit var course: Spinner
@@ -46,24 +53,33 @@ class MainActivity : ComponentActivity() {
         )
         setContentView(R.layout.activity_main)
 
-        val tabs = findViewById<TabHost>(android.R.id.tabhost)
-        tabs.setup()
-        tabs.addTab(tabs.newTabSpec("registration").setIndicator(getString(R.string.tab_registration)).setContent(R.id.form_scroll))
-        tabs.addTab(tabs.newTabSpec("rules").setIndicator(getString(R.string.tab_rules)).setContent(R.id.rules_tab))
-        tabs.addTab(tabs.newTabSpec("authors").setIndicator(getString(R.string.tab_authors)).setContent(R.id.authors_list))
-        tabs.addTab(tabs.newTabSpec("settings").setIndicator(getString(R.string.tab_settings)).setContent(R.id.settings_tab))
-        tabs.currentTab = savedInstanceState?.getInt("selectedTab") ?: 0
+        pager = findViewById(R.id.pager)
+        pages = listOf(
+            R.layout.tab_registration, R.layout.tab_rules,
+            R.layout.tab_authors, R.layout.tab_settings
+        ).map { layoutInflater.inflate(it, pager, false) }
+        pager.adapter = TabsAdapter(pages)
+        pager.offscreenPageLimit = pages.size - 1
+        val titles = listOf(
+            R.string.tab_registration, R.string.tab_rules,
+            R.string.tab_authors, R.string.tab_settings
+        )
+        tabMediator = TabLayoutMediator(findViewById<TabLayout>(R.id.tabs), pager) { tab, position ->
+            tab.setText(titles[position])
+        }
+        tabMediator.attach()
+        pager.setCurrentItem(savedInstanceState?.getInt("selectedTab") ?: 0, false)
         setupRules()
         setupAuthors()
         setupSettings()
-        ViewCompat.setOnApplyWindowInsetsListener(tabs) { view, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById<View>(R.id.main_root)) { view, insets ->
             val padding = insets.getInsets(
                 WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime()
             )
             view.setPadding(padding.left, padding.top, padding.right, padding.bottom)
             insets
         }
-        fullName = findViewById(R.id.full_name)
+        fullName = pageView(R.id.full_name)
         val nameFilter = InputFilter { source, start, end, _, _, _ ->
             val input = source.subSequence(start, end)
             if (input.all { it.isLetter() || it == ' ' }) {
@@ -73,11 +89,11 @@ class MainActivity : ComponentActivity() {
             }
         }
         fullName.filters = arrayOf(nameFilter, *fullName.filters)
-        gender = findViewById(R.id.gender)
-        course = findViewById(R.id.course)
-        difficulty = findViewById(R.id.difficulty)
-        calendar = findViewById(R.id.birth_calendar)
-        dateButton = findViewById(R.id.birth_date_button)
+        gender = pageView(R.id.gender)
+        course = pageView(R.id.course)
+        difficulty = pageView(R.id.difficulty)
+        calendar = pageView(R.id.birth_calendar)
+        dateButton = pageView(R.id.birth_date_button)
         course.adapter = ArrayAdapter.createFromResource(
             this, R.array.courses, android.R.layout.simple_spinner_item
         ).apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
@@ -125,19 +141,27 @@ class MainActivity : ComponentActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
         })
         gender.setOnCheckedChangeListener { _, _ ->
-            findViewById<TextView>(R.id.gender_error).visibility = View.GONE
+            pageView<TextView>(R.id.gender_error).visibility = View.GONE
         }
-        findViewById<Button>(R.id.register).setOnClickListener { registerPlayer() }
+        pageView<Button>(R.id.register).setOnClickListener { registerPlayer() }
+    }
+
+    private fun <T : View> pageView(id: Int): T =
+        pages.firstNotNullOf { it.findViewById<T>(id) }
+
+    override fun onDestroy() {
+        tabMediator.detach()
+        super.onDestroy()
     }
 
     private fun setupRules() {
         val html = resources.openRawResource(R.raw.rules).bufferedReader().use { it.readText() }
-        findViewById<TextView>(R.id.rules_text).text = Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY)
+        pageView<TextView>(R.id.rules_text).text = Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY)
     }
 
     private fun setupAuthors() {
         val authors = listOf(getString(R.string.author_name))
-        findViewById<ListView>(R.id.authors_list).adapter = object : BaseAdapter() {
+        pageView<ListView>(R.id.authors_list).adapter = object : BaseAdapter() {
             override fun getCount() = authors.size
             override fun getItem(position: Int) = authors[position]
             override fun getItemId(position: Int) = position.toLong()
@@ -156,8 +180,8 @@ class MainActivity : ComponentActivity() {
     private fun setupSettings() {
         val preferences = getSharedPreferences("game_settings", MODE_PRIVATE)
         fun bind(id: Int, label: Int, format: Int, key: String, initial: Int, step: Int = 1) {
-            val bar = findViewById<SeekBar>(id)
-            val text = findViewById<TextView>(label)
+            val bar = pageView<SeekBar>(id)
+            val text = pageView<TextView>(label)
             bar.progress = preferences.getInt(key, initial) / step - 1
             fun update() { text.text = getString(format, (bar.progress + 1) * step) }
             update()
@@ -191,7 +215,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun updateDifficulty() {
-        findViewById<TextView>(R.id.difficulty_label).text =
+        pageView<TextView>(R.id.difficulty_label).text =
             getString(R.string.difficulty_value, difficulty.progress + 1)
     }
 
@@ -206,7 +230,7 @@ class MainActivity : ComponentActivity() {
             R.id.gender_male -> Gender.MALE
             R.id.gender_female -> Gender.FEMALE
             else -> {
-                findViewById<TextView>(R.id.gender_error).visibility = View.VISIBLE
+                pageView<TextView>(R.id.gender_error).visibility = View.VISIBLE
                 gender.requestFocus()
                 return
             }
@@ -216,33 +240,43 @@ class MainActivity : ComponentActivity() {
         showPlayer(player!!)
         WindowCompat.getInsetsController(window, fullName).hide(WindowInsetsCompat.Type.ime())
         fullName.clearFocus()
-        val scroll = findViewById<ScrollView>(R.id.form_scroll)
-        scroll.post { scroll.smoothScrollTo(0, findViewById<View>(R.id.result_panel).top) }
+        val scroll = pageView<ScrollView>(R.id.form_scroll)
+        scroll.post { scroll.smoothScrollTo(0, pageView<View>(R.id.result_panel).top) }
     }
 
     private fun showPlayer(player: Player) {
-        findViewById<TextView>(R.id.result).text = getString(
+        pageView<TextView>(R.id.result).text = getString(
             R.string.player_summary, player.fullName,
             getString(if (player.gender == Gender.MALE) R.string.male else R.string.female),
             player.course, player.difficulty, player.birthDate.formatted(),
             getString(player.zodiac.nameResource)
         )
-        findViewById<ImageView>(R.id.zodiac_image).apply {
+        pageView<ImageView>(R.id.zodiac_image).apply {
             setImageDrawable(ZodiacDrawable(player.zodiac))
             contentDescription = getString(player.zodiac.nameResource)
         }
-        findViewById<View>(R.id.result_panel).visibility = View.VISIBLE
+        pageView<View>(R.id.result_panel).visibility = View.VISIBLE
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
+        pages.forEachIndexed { index, view ->
+            @Suppress("DEPRECATION")
+            val state = savedInstanceState.getSparseParcelableArray<Parcelable>("page_$index")
+            state?.let { view.restoreHierarchyState(it) }
+        }
         updateDate()
         updateDifficulty()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putInt("selectedTab", findViewById<TabHost>(android.R.id.tabhost).currentTab)
+        outState.putInt("selectedTab", pager.currentItem)
+        pages.forEachIndexed { index, view ->
+            val state = SparseArray<Parcelable>()
+            view.saveHierarchyState(state)
+            outState.putSparseParcelableArray("page_$index", state)
+        }
         outState.putLong("birthDate", birthDate.timeInMillis)
         player?.let {
             outState.putBundle("player", Bundle().apply {
